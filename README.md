@@ -4,9 +4,15 @@
 
 ClawMio 是一个 Python / FastAPI + SQLite 应用，提供中文管理后台，将微信 ClawBot 消息接入阿里云百炼 Managed Agent（MA）。扫码绑定后自动创建独立会话和专属记忆库，支持文件交互、预算结算、Bot 自助接口及定时任务。
 
+**[查看界面与功能效果 →](docs/screenshots.md)** · [安装与启动](#快速开始) · [CLI 使用指南](docs/cli.md)
+
 用户在微信里提出需求，Agent 在云端使用工具、处理文件、执行任务，再把文字与产物送回微信。ClawMio 负责接入、身份、会话、调度和额度管理，底层执行由 Managed Agent 托管，适合把个人助理服务提供给多位用户。
 
 这是独立社区项目，不是微信或阿里云官方产品。使用前需自行取得相关服务的使用权限；云服务及模型调用可能产生费用。
+
+[![ClawMio 微信 Bot 工作台：连接状态、专属记忆、会话历史与额度管理](images/Snipaste_2026-09-19_22-51-34.png)](docs/screenshots.md)
+
+*微信 Bot 工作台总览。更多执行记录、定时任务和费用明细见 [完整效果预览](docs/screenshots.md)。*
 
 ## 面向谁
 
@@ -37,6 +43,7 @@ ClawMio 是一个 Python / FastAPI + SQLite 应用，提供中文管理后台，
 
 | 你想做什么 | 阅读入口 |
 | --- | --- |
+| 先看看管理后台长什么样 | [界面与功能效果](docs/screenshots.md) |
 | 第一次接入，不知道要准备什么 | [接入材料清单](docs/prerequisites.md) |
 | 本地体验或部署到 Linux | 本页快速开始 → [完整部署指南](docs/deployment.md) |
 | 用 Key 自动创建 Agent 和环境 | [资源初始化脚本](docs/bootstrap.md) |
