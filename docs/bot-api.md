@@ -4,7 +4,7 @@
 
 ## 更新 Linux 服务
 
-更新 Git 工作区或将更新包解压覆盖 `/opt/clawbridge` 下的代码（保留原 `.env`、`data/`、数据库和虚拟环境）。在服务器 `.env` 添加：
+更新 Git 工作区或将更新包解压覆盖 `/opt/clawmio` 下的代码（保留原 `.env`、`data/`、数据库和虚拟环境）。在服务器 `.env` 添加：
 
 ```dotenv
 CLAW_API_BASE_URL=https://bots.example.com

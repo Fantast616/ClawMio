@@ -25,29 +25,36 @@ from .runtime import Runtime
 from .billing import micros
 from .bot_api import router as bot_router
 from . import schedules
+from clawmio.paths import assets
+from clawmio.locking import exclusive
 
 ROOT = Path(__file__).resolve().parent.parent
+ASSETS = assets()
 mimetypes.add_type('application/javascript', '.js')
 mimetypes.add_type('text/css', '.css')
-load_dotenv(ROOT / '.env')
+load_dotenv(Path(os.getenv('CLAWMIO_HOME', str(ROOT))) / '.env')
 
 
 @asynccontextmanager
 async def lifespan(app):
     if not os.getenv('ADMIN_PASSWORD') or not os.getenv('COOKIE_SECRET'):
         raise RuntimeError('请先配置 .env 中的 ADMIN_PASSWORD 和 COOKIE_SECRET')
-    db = Store(os.getenv('DATABASE_PATH', str(ROOT / 'data/claw.db')))
-    app.state.db = db
-    app.state.runtime = Runtime(db, ManagedAgent())
-    await app.state.runtime.boot()
-    yield
-    await app.state.runtime.close()
-    db.db.close()
+    db_path = Path(os.getenv('DATABASE_PATH', str(ROOT / 'data/claw.db'))).resolve()
+    with exclusive(str(db_path) + '.worker.lock'):
+        db = Store(str(db_path))
+        app.state.db = db
+        app.state.runtime = Runtime(db, ManagedAgent())
+        try:
+            await app.state.runtime.boot()
+            yield
+        finally:
+            await app.state.runtime.close()
+            db.db.close()
 
 
 app = FastAPI(title='Claw × Managed Agent', lifespan=lifespan, docs_url=None, redoc_url=None)
 app.include_router(bot_router)
-app.mount('/static', StaticFiles(directory=ROOT / 'static'), name='static')
+app.mount('/static', StaticFiles(directory=ASSETS / 'static'), name='static')
 attempts = {}
 
 
@@ -98,7 +105,7 @@ def bot_or_404(bot_id):
 @app.get('/')
 @app.get('/bind/{ticket}')
 async def home(ticket=None):
-    return FileResponse(ROOT / 'static/index.html')
+    return FileResponse(ASSETS / 'static/index.html')
 
 
 class Login(BaseModel):

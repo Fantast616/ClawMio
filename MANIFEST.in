@@ -1,0 +1,9 @@
+include requirements.txt
+include static/index.html static/app.js static/style.css
+include docs/agent-system-prompt.txt
+include skills/claw-bot-self-service/SKILL.md
+include skills/claw-bot-self-service/scripts/bot_api.py
+prune tests
+include docs/cli.md
+include scripts/package_release.py scripts/check_distribution.py
+include deploy/linux-release/install.sh deploy/linux-release/clawmio deploy/linux-release/README.txt

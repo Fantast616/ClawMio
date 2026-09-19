@@ -1,5 +1,7 @@
 # 自动准备百炼资源
 
+安装软件包后推荐使用 [CLI](cli.md)：`clawmio init` 交互配置，`clawmio provision` 离线预览，`clawmio provision --apply` 执行并可续跑。CLI 在提供 Base URL 时自动上传并同步自助 Skill；留空则跳过上传并移除本安装追踪的 Skill 挂载。下文是保留兼容的源码脚本工作流，脚本默认不启用自动 Skill。
+
 此脚本让第一次接入无需手工创建 Environment 和 Agent。你只需先开通 MA、准备有资源创建权限的工作空间 API Key、工作空间 ID 和区域。Key 本身不足以推断工作空间 API 地址。脚本读取项目根目录的 `.env`，不读取 shell 中的同名凭证。
 
 ## Linux
@@ -44,12 +46,12 @@ python -m venv .venv
 
 已有 DEFAULT ID 时，会读取验证并复用，不修改原有配置。`--model`、`--name`、Skill 参数只作用于新建资源。不要用这个脚本更新已有 Agent；在控制台调整并新开 Session。
 
-脚本在忽略提交的 `data/bootstrap-ma.json` 保存工作空间、安装标识和创建状态；单实例锁在 `data/bootstrap-ma.lock`。同一份状态重复运行不会重复创建。请保留 `.env` 和此状态文件。
+脚本在忽略提交的 `data/bootstrap-ma.json` 保存工作空间、区域、安装标识和创建状态；单实例锁在 `data/bootstrap-ma.lock`，由操作系统释放。同一份状态重复运行不会重复创建。请保留 `.env` 和此状态文件。
 
 - 明确的 400/401/403 等拒绝：修正配置或权限后重跑。
 - 超时、5xx 或返回缺少 ID：保留状态；重跑会通过安装标识查找云端资源。如果仍未找到，脚本停止而不再次创建。到控制台核对后，将已创建资源的 ID 填进 `.env` 再重跑；确认根本未创建时，才手动清除状态中对应的 pending 项。
 - 环境同名冲突：填入要复用的 Environment ID，或在核实未创建后使用 `--name` 指定另一个名称。
-- 进程被强制结束留下锁：确认没有初始化进程运行，再移除 `data/bootstrap-ma.lock`。
+- 进程被强制结束：内核锁自动释放，锁文件可以保留；不要删除正在使用的锁文件。
 - 切换工作空间：使用新的项目配置目录；不跨工作空间复用状态或资源 ID。
 
 ## 可选 Skill

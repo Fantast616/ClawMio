@@ -1,10 +1,10 @@
-# ClawBridge
+# ClawMio
 
 **用更低的部署成本，提供龙虾类产品的核心助理功能：一个控制面管理多个 Bot，执行交给百炼 Managed Agent，运行时按量付费。**
 
-ClawBridge 是一个 Python / FastAPI + SQLite 应用，提供中文管理后台，将微信 ClawBot 消息接入阿里云百炼 Managed Agent（MA）。扫码绑定后自动创建独立会话和专属记忆库，支持文件交互、预算结算、Bot 自助接口及定时任务。
+ClawMio 是一个 Python / FastAPI + SQLite 应用，提供中文管理后台，将微信 ClawBot 消息接入阿里云百炼 Managed Agent（MA）。扫码绑定后自动创建独立会话和专属记忆库，支持文件交互、预算结算、Bot 自助接口及定时任务。
 
-用户在微信里提出需求，Agent 在云端使用工具、处理文件、执行任务，再把文字与产物送回微信。ClawBridge 负责接入、身份、会话、调度和额度管理，底层执行由 Managed Agent 托管，适合把个人助理服务提供给多位用户。
+用户在微信里提出需求，Agent 在云端使用工具、处理文件、执行任务，再把文字与产物送回微信。ClawMio 负责接入、身份、会话、调度和额度管理，底层执行由 Managed Agent 托管，适合把个人助理服务提供给多位用户。
 
 这是独立社区项目，不是微信或阿里云官方产品。使用前需自行取得相关服务的使用权限；云服务及模型调用可能产生费用。
 
@@ -56,6 +56,43 @@ ClawBridge 是一个 Python / FastAPI + SQLite 应用，提供中文管理后台
 - **定时任务**：每天、每周、分钟间隔或单次；每分钟扫描，新建一次性 Session 执行，不替换聊天会话，结果回传微信。
 
 ## 快速开始
+
+### 推荐：安装 CLI 软件包
+
+**[下载 Linux 发布包](https://github.com/Fantast616/ClawMio/releases/download/v0.0.1/clawmio-0.0.1-linux.tar.gz)** · [下载通用 wheel](https://github.com/Fantast616/ClawMio/releases/download/v0.0.1/clawmio-0.0.1-py3-none-any.whl) · [查看 Release](https://github.com/Fantast616/ClawMio/releases/tag/v0.0.1)
+
+Linux 发布包解压后即可安装启动：
+
+```bash
+tar -xzf clawmio-0.0.1-linux.tar.gz
+cd clawmio-0.0.1-linux
+./install.sh
+./clawmio start
+```
+
+需要 Python 3.11+、venv/pip 和安装依赖的网络；发布包内含 wheel 与安装入口，不是免 Python 的独立二进制。
+
+需要 Python 3.11+。在源码根目录安装，或将第一条换成 `python -m pip install ./clawmio-0.0.1-py3-none-any.whl`：
+
+```bash
+python -m pip install .
+clawmio start --open
+```
+
+首次启动会先隐藏输入百炼 API Key，再填写工作空间 ID、区域和可选 Base URL；自动生成管理员密码，展示计划后创建 Environment、Agent，并按需上传和挂载自助 Skill。Base URL 留空即可先使用基础聊天、`/usage` 和 `/clear`。服务就绪后输出监听与可访问地址；使用 `clawmio password` 查看登录密码。
+
+```bash
+clawmio status
+clawmio logs -f
+clawmio stop
+clawmio restart
+clawmio configure
+clawmio --help
+```
+
+不带子命令的 `clawmio` 会前台启动。配置和数据默认放在 `~/.clawmio`，与安装目录分开。完整命令、可选功能、升级和故障恢复见 **[CLI 使用指南](docs/cli.md)**。目前提供本地构建/安装方式，不假定已发布到 PyPI。
+
+### 源码脚本方式（兼容原工作流）
 
 ### 1. 准备
 

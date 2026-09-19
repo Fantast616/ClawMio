@@ -26,3 +26,8 @@ jobs:
       - run: bash -n start.sh
       - run: python scripts/package_skill.py
       - run: python scripts/check_repository.py
+      - run: python -m pip install build
+      - run: python -m build
+      - run: python scripts/check_distribution.py dist/clawmio-0.0.1-py3-none-any.whl
+      - run: bash -n deploy/linux-release/install.sh deploy/linux-release/clawmio
+      - run: python scripts/package_release.py

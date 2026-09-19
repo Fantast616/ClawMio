@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -euo pipefail
+PACKAGE_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+if [[ ! -x "$PACKAGE_DIR/.venv/bin/python" ]]; then
+  echo "请先执行同目录中的 ./install.sh 安装依赖。" >&2
+  exit 1
+fi
+exec "$PACKAGE_DIR/.venv/bin/python" -m clawmio "$@"

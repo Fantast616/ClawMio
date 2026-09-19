@@ -4,7 +4,7 @@ import httpx
 import pytest
 from dotenv import dotenv_values
 
-from scripts import bootstrap_ma
+from clawmio import provision as bootstrap_ma
 from scripts.bootstrap_ma import Provisioner, SetupError
 
 

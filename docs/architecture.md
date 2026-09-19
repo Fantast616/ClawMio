@@ -28,6 +28,9 @@ flowchart LR
 | app/store.py | SQLite 表、增量迁移、消息去重、会话切换事务、Token 持久化 |
 | app/billing.py | 金额精度、费率快照、Session 用量差值、工具调用去重与原子扣费 |
 | app/schedules.py | 时间规则、时区、下次触发计算、分钟扫描与事务领取 |
+| clawmio/cli.py | 可安装 CLI、交互配置、独立配置目录、后台/前台启停与地址提示 |
+| clawmio/provision.py | 云资源初始化、Skill 上传审核/挂载、持久化不确定状态；旧 bootstrap 脚本的共用实现 |
+| clawmio/locking.py | 跨平台内核进程锁；ASGI 生命周期按数据库绝对路径锁定单 worker |
 | app/media.py / replies.py | 媒体下载/加解密/上传与文本消息切分 |
 | static/ | 无构建步骤的 HTML/CSS/JavaScript 管理界面 |
 | skills/claw-bot-self-service/ | 云端 Agent 使用的 Skill 和标准库客户端脚本 |

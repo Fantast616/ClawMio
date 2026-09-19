@@ -1,6 +1,6 @@
 # 部署、升级与排障
 
-先准备 [材料清单](prerequisites.md)。所有命令在项目根目录执行；示例 `/opt/clawbridge` 和 `bots.example.com` 均需替换为自己的路径/地址。
+先准备 [材料清单](prerequisites.md)。所有命令在项目根目录执行；示例 `/opt/clawmio` 和 `bots.example.com` 均需替换为自己的路径/地址。
 
 ## 本地 Linux
 
@@ -58,13 +58,13 @@ python -m venv .venv
 
 ## Linux 长期运行
 
-服务端应使用持久化目录、非 root 服务用户和单进程。可参照 [systemd 示例](../deploy/clawbridge.service)：
+服务端应使用持久化目录、非 root 服务用户和单进程。可参照 [systemd 示例](../deploy/clawmio.service)：
 
-1. 放置代码于 `/opt/clawbridge`，创建服务用户 `clawbridge`，使它能读代码和 `.env`，并写入虚拟环境、data、logs。
+1. 放置代码于 `/opt/clawmio`，创建服务用户 `clawmio`，使它能读代码和 `.env`，并写入虚拟环境、data、logs。
 2. 在该用户身份下准备 `.env`，运行 `bash start.sh install`。
-3. 编辑示例中的用户/目录，复制到 `/etc/systemd/system/clawbridge.service`。
-4. 运行 `sudo systemctl daemon-reload` 和 `sudo systemctl enable --now clawbridge`。
-5. 用 `sudo systemctl status clawbridge`、`sudo journalctl -u clawbridge -f` 查看状态。
+3. 编辑示例中的用户/目录，复制到 `/etc/systemd/system/clawmio.service`。
+4. 运行 `sudo systemctl daemon-reload` 和 `sudo systemctl enable --now clawmio`。
+5. 用 `sudo systemctl status clawmio`、`sudo journalctl -u clawmio -f` 查看状态。
 
 systemd 使用前台 `start.sh run`。使用 systemd 后，统一由 `systemctl restart/stop` 管理，不要另开 `start.sh start` 或手动 Uvicorn。
 
