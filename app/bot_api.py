@@ -86,7 +86,7 @@ async def reset_session(request: Request, body: ResetInput, bot=Depends(identity
             raise HTTPException(409,'Bot 未绑定、已暂停或尚未创建初始会话')
         if bot['session_id']!=body.expected_session_id:
             raise HTTPException(409,'当前会话已变化，请先重新查询用量')
-        if bot['budget_micro'] is not None and bot['spent_micro']>=bot['budget_micro']:
+        if rt.billing.is_exhausted(bot):
             raise HTTPException(402,'您已欠费，暂时无法开启新会话')
         pending=db.one("SELECT id FROM bot_reset_requests WHERE bot_id=? AND status IN ('queued','creating','uncertain')",(bot['id'],))
         if pending:

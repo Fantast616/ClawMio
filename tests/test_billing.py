@@ -27,6 +27,32 @@ def job(db,mid='m'):
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize('budget,spent',[(None,0),(1000000,0),(0,0),(1000000,1500000)])
+async def test_unpriced_executes_without_budget_enforcement_or_charge(db,budget,spent):
+    db.execute('DELETE FROM agent_prices')
+    db.update('bots','id','b',budget_micro=budget,spent_micro=spent,billing_error='请先配置该 Agent 的 Token 单价')
+    ma=AsyncMock();ma.supports_sse=False
+    ma.request.return_value={'status':'idle'}
+    ma.send.return_value={'data':[{'id':'event','created_at':'2026-09-19T00:00:00Z'}]}
+    rt=Runtime(db,ma);j=job(db)
+    await rt.execute_job(db.one('SELECT * FROM bots'),j)
+    ma.send.assert_awaited_once_with('sesn_1','hello')
+    assert db.one('SELECT * FROM jobs')['billing_state']=='unpriced'
+    assert db.one('SELECT * FROM bots')['billing_error']==''
+    db.update('jobs','id',j['id'],status='done')
+    assert await rt.billing.settle_pending('b')
+    assert db.rows('SELECT * FROM charges')==[]
+    assert db.one('SELECT * FROM bots')['spent_micro']==spent
+
+
+def test_budget_enforcement_uses_scheduled_agent_rate(db):
+    b=Billing(db,AsyncMock());db.update('bots','id','b',budget_micro=0)
+    bot=db.one('SELECT * FROM bots');j=job(db)
+    assert not b.reject_if_exhausted(bot,{**j,'scheduled_agent_id':'unpriced_agent'})
+    assert b.reject_if_exhausted(bot,j)
+
+
+@pytest.mark.asyncio
 async def test_delta_price_snapshot_time_debit_and_exactly_once(db):
     ma=AsyncMock();billing=Billing(db,ma);j=job(db)
     ma.request.return_value=snapshot(1000,200,100,20)

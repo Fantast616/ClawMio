@@ -53,8 +53,12 @@ class Billing:
                         (job.get('workspace_id') or os.getenv('BAILIAN_WORKSPACE_ID',''),job['session_id'],data['call_id'],job['id'],ev['id'],'web_search',ev['created_at']))
         return started
 
+    def is_exhausted(self, bot, agent_id=None):
+        priced=self.db.one('SELECT agent_id FROM agent_prices WHERE agent_id=?',(agent_id or bot['agent_id'],))
+        return bool(priced and bot['budget_micro'] is not None and bot['spent_micro']>=bot['budget_micro'])
+
     def reject_if_exhausted(self, bot, job):
-        if bot['budget_micro'] is None or bot['spent_micro']<bot['budget_micro']:
+        if not self.is_exhausted(bot,job.get('scheduled_agent_id')):
             return False
         self.db.update('jobs','id',job['id'],status='reply_pending',billing_state='rejected',
             error='预算不足，未提交 MA',result='您已欠费，暂时无法执行，请补充预算后重试。')
@@ -65,12 +69,10 @@ class Billing:
         if job.get('billing_state')=='pending' and job.get('billing_session_id')==bot['session_id']:
             return True
         price=self.db.one('SELECT * FROM agent_prices WHERE agent_id=?',(bot['agent_id'],))
-        if not price and bot['budget_micro'] is None:
-            self.db.update('jobs','id',job['id'],billing_state='unpriced')
-            return True  # Existing unlimited Bots remain available until pricing is configured.
         if not price:
-            self.db.update('bots','id',bot['id'],billing_error='请先配置该 Agent 的 Token 单价')
-            return False
+            self.db.update('jobs','id',job['id'],billing_state='unpriced')
+            self.db.update('bots','id',bot['id'],billing_error='')
+            return True  # No Agent rate means local billing and budget enforcement are disabled.
         if price.get('cache_mode')=='explicit' and price.get('cache_creation_micro') is None:
             self.db.update('bots','id',bot['id'],billing_error='请先配置该 Agent 的缓存创建单价')
             return False

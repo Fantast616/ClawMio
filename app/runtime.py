@@ -619,9 +619,6 @@ class Runtime:
         if not job['session_id'] and job['status'] in ('queued','scheduled_creating'):
             if job['status']=='queued' and self.billing.reject_if_exhausted(bot,job):
                 return
-            if job['status']=='queued' and bot['budget_micro'] is not None and not self.db.one('SELECT agent_id FROM agent_prices WHERE agent_id=?',(job['scheduled_agent_id'],)):
-                self.db.update('jobs','id',job['id'],error='请先配置该 Agent 的计费单价')
-                return
             try:
                 configured=await self.ensure_memory(bot)
                 configured.update(agent_id=job['scheduled_agent_id'],environment_id=job['scheduled_environment_id'],
@@ -660,7 +657,7 @@ class Runtime:
         if bot['session_id']!=reset['from_session_id']:
             self.db.execute("UPDATE bot_reset_requests SET status='superseded',session_id=?,error='' WHERE id=?",(bot['session_id'],reset['id']))
             return True
-        if reset['status']=='queued' and bot['budget_micro'] is not None and bot['spent_micro']>=bot['budget_micro']:
+        if reset['status']=='queued' and self.billing.is_exhausted(bot):
             self.db.execute("UPDATE bot_reset_requests SET status='failed',error='您已欠费，暂时无法开启新会话' WHERE id=?",(reset['id'],))
             return True
         try:

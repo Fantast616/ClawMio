@@ -92,6 +92,24 @@ async def test_scheduled_session_isolated_output_and_billing(tmp_path):
 
 
 @pytest.mark.asyncio
+async def test_unpriced_schedule_runs_with_exhausted_budget(tmp_path):
+    db=Store(tmp_path/'unpriced.db');bot=seed(db)
+    db.update('bots','id','a',budget_micro=0)
+    bot=db.one('SELECT * FROM bots');task(db,bot)
+    rt=Runtime(db,AsyncMock());rt.ma.supports_sse=False
+    rt.start=lambda key,coro:coro.close()
+    db.execute('UPDATE schedules SET next_run_at=?',(time.time()-1,));Scheduler(rt).scan(time.time())
+    rt.ma.create_session.return_value={'id':'unpriced_session'}
+    rt.ma.request.return_value={'status':'idle'}
+    rt.ma.send.return_value={'data':[{'id':'start','created_at':'2026-09-19T00:00:00Z'}]}
+    await rt.scheduled_step(bot,db.one('SELECT * FROM jobs'))
+    rt.ma.send.assert_awaited_once_with('unpriced_session','查询今日科技新闻')
+    assert db.one('SELECT * FROM jobs')['billing_state']=='unpriced'
+    assert db.one('SELECT * FROM bots')['session_id']=='chat_session'
+    db.db.close()
+
+
+@pytest.mark.asyncio
 async def test_schedule_creation_timeout_reconcile_and_debt(tmp_path):
     db=Store(tmp_path/'recover.db');bot=seed(db);task(db,bot)
     rt=Runtime(db,AsyncMock());rt.wx=AsyncMock();rt.start=lambda key,coro:coro.close()
@@ -108,6 +126,7 @@ async def test_schedule_creation_timeout_reconcile_and_debt(tmp_path):
     assert db.one('SELECT * FROM bots')['session_id']=='chat_session'
     db.update('jobs','id',job['id'],session_id='',status='queued')
     db.update('bots','id','a',budget_micro=0)
+    db.execute("INSERT INTO agent_prices(agent_id,input_micro,cache_micro,output_micro) VALUES('agent',1000000,100000,2000000)")
     await rt.scheduled_step(db.one('SELECT * FROM bots'),db.one('SELECT * FROM jobs'))
     assert db.one('SELECT * FROM jobs')['billing_state']=='rejected'
     rt.ma.create_session.assert_awaited_once()

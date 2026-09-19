@@ -46,6 +46,8 @@ def test_bearer_scope_usage_and_idempotent_reset(tmp_path,monkeypatch):
         u=c.get('/api/bot/usage?bot_id=b',headers=h).json()
         assert u['bot_id']=='a' and u['budget']['remaining']=='0.750000'
         assert 'secret' not in json.dumps(u) and a['api_token'] not in json.dumps(u)
+        # Without an Agent price even a zero budget must allow a new session.
+        db.update('bots','id','a',budget_micro=0)
         payload={'expected_session_id':'sesn_a'}
         assert c.post('/api/bot/sessions/reset',json=payload,headers=h).status_code==422
         h['Idempotency-Key']='same-request-123'
@@ -56,6 +58,7 @@ def test_bearer_scope_usage_and_idempotent_reset(tmp_path,monkeypatch):
         assert c.post('/api/bot/sessions/reset',json={'expected_session_id':'sesn_b'},headers=h).status_code==409
         assert c.get('/api/bot/session-requests/'+rid,headers={'Authorization':'Bearer '+b['api_token']}).status_code==404
         assert c.get('/api/bot/session-requests/'+rid,headers=h).json()['status']=='queued'
+        db.update('bots','id','a',budget_micro=1000000)
         rt.ma.request.side_effect=MAError('unavailable')
         u=c.get('/api/bot/usage',headers=h).json()
         assert u['current_session_error'] and u['budget']['remaining']=='0.750000'
@@ -69,6 +72,7 @@ def test_bearer_scope_usage_and_idempotent_reset(tmp_path,monkeypatch):
 @pytest.mark.asyncio
 async def test_reset_waits_for_turn_and_recovers_lost_response(tmp_path):
     db=Store(tmp_path/'reset.db');a=seed(db);ma=AsyncMock();rt=Runtime(db,ma)
+    db.update('bots','id','a',budget_micro=0)
     rt.wx=AsyncMock()
     db.execute("INSERT INTO bot_reset_requests(id,bot_id,request_key,from_session_id) VALUES('request','a','key-1234','sesn_a')")
     jid=db.execute("INSERT INTO jobs(bot_id,message_id,user_id,text,status,event_id,session_id) VALUES('a','m','user','reset please','running','ev','sesn_a')")
