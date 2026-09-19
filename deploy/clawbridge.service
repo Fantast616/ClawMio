@@ -1,0 +1,20 @@
+[Unit]
+Description=ClawBridge WeChat Managed Agent bridge
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=clawbridge
+Group=clawbridge
+WorkingDirectory=/opt/clawbridge
+Environment=HOST=127.0.0.1
+Environment=PORT=8000
+ExecStart=/usr/bin/bash /opt/clawbridge/start.sh run
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=60
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

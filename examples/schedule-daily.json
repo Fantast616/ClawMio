@@ -1,0 +1,5 @@
+{
+  "name": "每日科技新闻",
+  "prompt": "查询今天的重要科技新闻，简要总结并注明真实来源。",
+  "rule": {"kind": "daily", "time": "08:00", "timezone": "Asia/Shanghai"}
+}

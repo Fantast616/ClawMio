@@ -1,0 +1,8 @@
+fastapi==0.141.1
+uvicorn==0.53.0
+httpx==0.28.1
+python-dotenv==1.2.3
+qrcode==8.2
+pillow==12.3.0
+wechatbot-sdk==0.3.0
+tzdata==2026.4

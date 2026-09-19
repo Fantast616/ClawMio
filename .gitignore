@@ -1,0 +1,41 @@
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+local-access.txt
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Runtime data, exports, logs and databases
+/data/
+/logs/
+*.log
+*.db
+*.db-*
+*.sqlite
+*.sqlite3
+*.sqlite3-*
+
+# Generated release archives and external contract caches
+/artifacts/
+/skills/*.zip
+/docs/contracts/*.json
+
+# Python and tooling
+.venv/
+.venv-linux/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+*.egg-info/
+build/
+dist/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
